@@ -76,9 +76,11 @@ void lcdInfo(DateTime now) {
 		_lcd.setCursor(0,1);
 		_lcd.print("T1:");
 		_lcd.print(temp1);
-		_lcd.setCursor(9,1);
+		_lcd.write(176); //caractere °
+		_lcd.setCursor(8,1);
 		_lcd.print("T2:");
 		_lcd.print(temp2);
+		_lcd.write(176);
 	}
 	else {
 		_lcd.setCursor(0, 1);
