@@ -1,48 +1,98 @@
 // Date and time functions using a DS1307 RTC connected via I2C and Wire lib
 #include <Wire.h>
 #include <LiquidCrystal.h>
+#include <OneWire.h> // Inclusion de la librairie OneWire
 #include "RTClib.h"
 
-
-
+#define DS18B20 0x28     // Adresse 1-Wire du DS18B20
+#define TEMP1 7 // Broche utilisée pour le bus 1-Wire
+#define TEMP2 8
 #define RELAI_1 6
 #define RELAI_2 7
 
+OneWire _temp1(TEMP1); // Création de l'objet OneWire ds
+OneWire _temp2(TEMP2); // Création de l'objet OneWire ds
 
 
-RTC_DS1307 rtc;
+RTC_DS1307 _rtc;
 
 // initialize the library with the numbers of the interface pins
-LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+LiquidCrystal _lcd(12, 11, 5, 4, 3, 2);
 
 
+
+
+// Fonction récupérant la température depuis le DS18B20
+// Retourne true si tout va bien, ou false en cas d'erreur
+boolean getTemperature(float *temp, OneWire ds){
+  byte data[9], addr[8];
+  // data : Données lues depuis le scratchpad
+  // addr : adresse du module 1-Wire détecté
+ 
+  if (!ds.search(addr)) { // Recherche un module 1-Wire
+    ds.reset_search();    // Réinitialise la recherche de module
+    return false;         // Retourne une erreur
+  }
+   
+  if (OneWire::crc8(addr, 7) != addr[7]) // Vérifie que l'adresse a été correctement reçue
+    return false;                        // Si le message est corrompu on retourne une erreur
+ 
+  if (addr[0] != DS18B20) // Vérifie qu'il s'agit bien d'un DS18B20
+    return false;         // Si ce n'est pas le cas on retourne une erreur
+ 
+  ds.reset();             // On reset le bus 1-Wire
+  ds.select(addr);        // On sélectionne le DS18B20
+   
+  ds.write(0x44, 1);      // On lance une prise de mesure de température
+  delay(800);             // Et on attend la fin de la mesure
+   
+  ds.reset();             // On reset le bus 1-Wire
+  ds.select(addr);        // On sélectionne le DS18B20
+  ds.write(0xBE);         // On envoie une demande de lecture du scratchpad
+ 
+  for (byte i = 0; i < 9; i++) // On lit le scratchpad
+    data[i] = ds.read();       // Et on stock les octets reçus
+   
+  // Calcul de la température en degré Celsius
+  *temp = ((data[1] << 8) | data[0]) * 0.0625; 
+   
+  // Pas d'erreur
+  return true;
+}
 
 
 
 
 void lcdInfo(DateTime now) {
-	lcd.clear();
+	float temp;
+	_lcd.clear();
 
-	lcd.setCursor(3,0);
-	lcd.print("GreenHouse");
+	_lcd.setCursor(3,0);
+	_lcd.print("GreenHouse");
 
 	if ((now.second()%10) >= 5) {
-		lcd.setCursor(0,1);
-		lcd.print("EC:");
-		lcd.setCursor(10,1);
-		lcd.print("C:");
+		if(getTemperature(&temp, _temp1)) {
+			_lcd.setCursor(0,1);
+			_lcd.print("T1:");
+			_lcd.print(temp);
+		}
+		if(getTemperature(&temp, _temp2)) {
+			_lcd.setCursor(10,1);
+			_lcd.print("T2:");
+			_lcd.print(temp);
+		}
 	}
 	else {
-		lcd.setCursor(0, 1);
-		lcd.print(now.hour(),DEC);
-		lcd.print(':');
-		lcd.print(now.minute(), DEC);
-		lcd.print(':');
-		lcd.print(now.second(), DEC);
+		_lcd.setCursor(0, 1);
+		_lcd.print(now.hour(),DEC);
+		_lcd.print(':');
+		_lcd.print(now.minute(), DEC);
+		_lcd.print(':');
+		_lcd.print(now.second(), DEC);
 
-		lcd.setCursor(11,1);
-		if (digitalRead(RELAI_1) == LOW) lcd.print("led:Y");
-		else lcd.print("led:N");
+		_lcd.setCursor(11,1);
+		if (digitalRead(RELAI_1) == LOW) _lcd.print("led:Y");
+		else _lcd.print("led:N");
 	}
 }
 
@@ -53,37 +103,41 @@ void lcdInfo(DateTime now) {
 void setup () {
 	pinMode(RELAI_1, OUTPUT);
 	pinMode(RELAI_2, OUTPUT);
-	lcd.begin(16,2);
+	_lcd.begin(16,2);
 
 	Serial.begin(57600);
-	if (! rtc.begin()) {
+	if (! _rtc.begin()) {
 		Serial.println("Couldn't find RTC");
 		while (1);
 	}
 
-	if (! rtc.isrunning()) {
+	if (! _rtc.isrunning()) {
 		Serial.println("RTC is NOT running!");
-		rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+		_rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
 	}
 }
 
 
 void loop () {
-	DateTime now = rtc.now();
-	Serial.println(now.hour());
+	DateTime now = _rtc.now();
 
-	if (now.hour() < 6)
-	{
-		Serial.print("Relai OFF");
-		digitalWrite(RELAI_1,HIGH);
-		digitalWrite(RELAI_2,HIGH);
-	}
-	else
-	{
-		Serial.print("Relai ON");
-		digitalWrite(RELAI_1, LOW);
-		digitalWrite(RELAI_2, LOW);
-	}
 	lcdInfo(now);
+
+
+
+	//Serial.println(now.hour());
+	//if (now.hour() < 6)
+	//{
+	//	Serial.print("Relai OFF");
+	//	digitalWrite(RELAI_1,HIGH);
+	//	digitalWrite(RELAI_2,HIGH);
+	//}
+	//else
+	//{
+	//	Serial.print("Relai ON");
+	//	digitalWrite(RELAI_1, LOW);
+	//	digitalWrite(RELAI_2, LOW);
+	//}
+	
 	delay(1000);
 }
