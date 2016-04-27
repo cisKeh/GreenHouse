@@ -5,8 +5,8 @@
 #include "RTClib.h"
 
 #define DS18B20 0x28     // Adresse 1-Wire du DS18B20
-#define TEMP1 7 // Broche utilisée pour le bus 1-Wire
-#define TEMP2 8
+#define TEMP1 9 // Broche utilisée pour le bus 1-Wire
+#define TEMP2 10
 #define RELAI_1 6
 #define RELAI_2 7
 
@@ -64,23 +64,21 @@ boolean getTemperature(float *temp, OneWire ds){
 
 
 void lcdInfo(DateTime now) {
-	float temp;
+	float temp1, temp2;
+	getTemperature(&temp1, _temp1);
+	getTemperature(&temp2, _temp2);
 	_lcd.clear();
 
 	_lcd.setCursor(3,0);
 	_lcd.print("GreenHouse");
 
 	if ((now.second()%10) >= 5) {
-		if(getTemperature(&temp, _temp1)) {
-			_lcd.setCursor(0,1);
-			_lcd.print("T1:");
-			_lcd.print(temp);
-		}
-		if(getTemperature(&temp, _temp2)) {
-			_lcd.setCursor(10,1);
-			_lcd.print("T2:");
-			_lcd.print(temp);
-		}
+		_lcd.setCursor(0,1);
+		_lcd.print("T1:");
+		_lcd.print(temp1);
+		_lcd.setCursor(9,1);
+		_lcd.print("T2:");
+		_lcd.print(temp2);
 	}
 	else {
 		_lcd.setCursor(0, 1);
@@ -125,19 +123,19 @@ void loop () {
 
 
 
-	//Serial.println(now.hour());
-	//if (now.hour() < 6)
-	//{
-	//	Serial.print("Relai OFF");
-	//	digitalWrite(RELAI_1,HIGH);
-	//	digitalWrite(RELAI_2,HIGH);
-	//}
-	//else
-	//{
-	//	Serial.print("Relai ON");
-	//	digitalWrite(RELAI_1, LOW);
-	//	digitalWrite(RELAI_2, LOW);
-	//}
+	Serial.println(now.hour());
+	if (now.hour() < 6)
+	{
+		Serial.print("Relai OFF");
+		digitalWrite(RELAI_1,HIGH);
+		digitalWrite(RELAI_2,HIGH);
+	}
+	else
+	{
+		Serial.print("Relai ON");
+		digitalWrite(RELAI_1, LOW);
+		digitalWrite(RELAI_2, LOW);
+	}
 	
 	delay(1000);
 }
