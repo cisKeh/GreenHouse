@@ -69,31 +69,25 @@ void lcdInfo(DateTime now) {
 	getTemperature(&temp2, _temp2);
 	_lcd.clear();
 
-	_lcd.setCursor(3,0);
+	_lcd.setCursor(0,0);
 	_lcd.print("GreenHouse");
 
-	if ((now.second()%10) >= 5) {
-		_lcd.setCursor(0,1);
-		_lcd.print("T1:");
-		_lcd.print(temp1);
-		_lcd.write(176); //caractere °
-		_lcd.setCursor(8,1);
-		_lcd.print("T2:");
-		_lcd.print(temp2);
-		_lcd.write(176);
-	}
-	else {
-		_lcd.setCursor(0, 1);
-		_lcd.print(now.hour(),DEC);
-		_lcd.print(':');
-		_lcd.print(now.minute(), DEC);
-		_lcd.print(':');
-		_lcd.print(now.second(), DEC);
-
-		_lcd.setCursor(11,1);
-		if (digitalRead(RELAI_1) == LOW) _lcd.print("led:Y");
-		else _lcd.print("led:N");
-	}
+	
+	_lcd.setCursor(11,0);
+	_lcd.print(temp1, 1);
+	_lcd.write(223);
+	_lcd.setCursor(11,1);
+	_lcd.print(temp2, 1);
+	_lcd.write(223);
+	Serial.print("T1:");
+	Serial.println(temp1, 1);
+	Serial.print("T2:");
+	Serial.println(temp2, 1);
+	_lcd.setCursor(0, 1);
+	_lcd.print(now.hour(),DEC);
+	_lcd.print(':');
+	_lcd.print(now.minute(), DEC);
+	
 }
 
 
@@ -125,7 +119,6 @@ void loop () {
 
 
 
-	Serial.println(now.hour());
 	if (now.hour() < 6)
 	{
 		Serial.print("Relai OFF");
@@ -134,10 +127,10 @@ void loop () {
 	}
 	else
 	{
-		Serial.print("Relai ON");
+		//Serial.print("Relai ON");
 		digitalWrite(RELAI_1, LOW);
 		digitalWrite(RELAI_2, LOW);
 	}
 	
-	delay(1000);
+	delay(58400);
 }
