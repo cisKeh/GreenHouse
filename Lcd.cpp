@@ -54,3 +54,25 @@ void Lcd::lcdInfo(DateTime now) {
 	delay(58400);
 
 }
+
+Lcd::Lcd(unsigned int column, unsigned int line) {
+	_lcd.begin(16,2);
+	Serial.begin(57600);
+	if (! _rtc.begin()) {
+		_lcd.setCursor(0,0);
+		_lcd.println("Couldn't find RTC");
+		while (1);
+	}
+
+	if (! _rtc.isrunning()) {
+		_lcd.setCursor(0,0);
+		_lcd.println("RTC is NOT running!");
+		_rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+	}
+	
+}
+
+uint8_t Lcd::getHour() {
+	DateTime now = _rtc.now();
+	return now.hour()
+}

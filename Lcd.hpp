@@ -15,12 +15,16 @@ class Lcd {
 	private:
 		OneWire _temp1(TEMP1);
 		OneWire _temp2(TEMP2);
+		RTC_DS1307 _rtc;
+		// initialize the library with the numbers of the interface pins
 		LiquidCrystal _lcd(12,11,5,4,3,2);
 
 
 	public:
 		bool getTemperature(float* temp, OneWire ds);
 		void lcdInfo(DateTime now);
+		Lcd(unsigned int column,unsigned int line);
+		uint8_t getHour();
 
 
 
