@@ -9,10 +9,11 @@
 
 //Temperature Sensor
 constexpr uint8_t DS18B20() {return 0x28;}
-// constexpr uint8_t TEMP_1() {return 9;}
+constexpr uint8_t TEMP_1() {return 9;}
+constexpr uint8_t TEMP_2() {return 10;}
 // #define DS18B20 0x28	// Adresse 1-Wire du DS18B20
 // #define TEMP_1 9 		// Broche utilisée pour le bus 1-Wire
-#define TEMP_2 10
+// #define TEMP_2 10
 
 //Relay
 #define RELAY_1 6
@@ -29,22 +30,25 @@ constexpr uint8_t DS18B20() {return 0x28;}
 
 class Lcd {
 	private:
-		// uint8_t TEMP_1 = 9;
-		OneWire _temp1(9);
-		OneWire _temp2(TEMP_2);
-		RTC_DS1307 _rtc;
+		OneWire *_temp1, *_temp2;
+		RTC_DS1307 *_rtc;
+		LiquidCrystal *_lcd;
+		// OneWire _temp1(TEMP_1);
+		// OneWire _temp2(TEMP_2);
+		// RTC_DS1307 _rtc;
 		// initialize the library with the numbers of the interface pins
-		LiquidCrystal _lcd(RS,ENABLE,D0,D1,D2,D3);
+		// LiquidCrystal _lcd(RS,ENABLE,D0,D1,D2,D3);
 
 
 	public:
 		bool getTemperature(float* temp, OneWire ds);
 		void lcdInfo();
 		uint8_t getHour();
-		uint8_t getMinute();
+		uint8_t getMin();
 		void showTemp(unsigned column1, unsigned line1, unsigned column2, unsigned line2);
 		void showTime(unsigned column, unsigned line);
 		Lcd();
+		~Lcd();
 
 };
 

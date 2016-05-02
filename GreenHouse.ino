@@ -1,19 +1,20 @@
 #include "Lcd.hpp"
 
-Lcd lcd;
+Lcd* lcd;
 
 void setup () {
 	pinMode(RELAY_1, OUTPUT);
 	pinMode(RELAY_2, OUTPUT);
+	lcd = new Lcd();
 
 	
 }
 
 
 void loop () {
-	lcd.lcdInfo();
+	lcd->lcdInfo();
 
-	if (lcd.getHour() < 6) {
+	if (lcd->getHour() < 6) {
 		//Relay OFF
 		digitalWrite(RELAY_1,HIGH);
 		digitalWrite(RELAY_2,HIGH);
